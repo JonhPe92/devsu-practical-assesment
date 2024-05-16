@@ -1,142 +1,66 @@
-# Demo Devops NodeJs
+## Terraform Deployment
 
-This is a simple application to be used in the technical test of DevOps.
+Several modules are used to deploy the entire infrastructure in Azure. Every mayor resource is modular so we can scale or deploy additional resources in case they are need it. 
 
-## Getting Started
+### Modules
 
-### Prerequisites
+- **SERVICE PRINCIPAL - Authenticate Terraform with RABC**
+- **AZURE AKS CLUSTER**
+- **TRAEFIK INGRESS CONTROLLER - External Ingress Load Balancer Type this resource will be the entry point for the app (a public DNS is used to redirect the traffic to the desired hostname (Endpoint) - CloudFare**
+- **CERTMANAGER -** Resource to issue TLS certificates, this resource has been proved in a bare metal Kubernetes cluster environment, with Azure there is a problem validating the proper certificate issuer.
 
-- Node.js 18.15.0
+To deploy the infrastructure ensure terraform and azure cli are installed in your cmd o pwsh
 
-### Installation
-
-Clone this repo.
-
-```bash
-git clone https://bitbucket.org/devsu/demo-devops-nodejs.git
-```
-
-Install dependencies.
+Run [az login](https://learn.microsoft.com/en-us/cli/azure/account#az-login) without any parameters and follow the instructions to sign in to Azure.
 
 ```bash
-npm i
+az login
+az account show
+az account list --query "[?user.name=='<microsoft_account_email>'].{Name:name, ID:id, Default:isDefault}" --output Table
 ```
 
-### Database
-
-The database is generated as a file in the main path when the project is first run, and its name is `dev.sqlite`.
-
-Consider giving access permissions to the file for proper functioning.
-
-## Usage
-
-To run tests you can use this command.
+Run the following command to initialize terraform
 
 ```bash
-npm run test
+terraform init
+terraform plan
+terraform apply -auto-approve
 ```
 
-To run locally the project you can use this command.
+If the deployment is correct the following should be obtained with terraform out
 
-```bash
-npm run start
-```
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/513a1605-ee23-4df7-9ca1-540eff625288/Untitled.png)
 
-Open http://localhost:8000/api/users with your browser to see the result.
+An AKS cluster resource should be provisioned with the necessary configuration to integrate the automatic deployment with the Azure Pipeline.
 
-### Features
+## Containerization
 
-These services can perform,
+A docker file is created following best practices, avoiding copying files  that only increase the image size and could cause vulnerabilities , dotenv was removed for production instead env variables  can be passed to the app via ConfigMaps and Secrets. 
 
-#### Create User
+ 
 
-To create a user, the endpoint **/api/users** must be consumed with the following parameters:
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/8fe7a062-5f04-4953-a9fb-cde170d2bc58/Untitled.png)
 
-```bash
-  Method: POST
-```
+For this scenario a Azure Container Register was created to allocate the manifest for every time a build is trigger in the pipeline. 
 
-```json
-{
-    "dni": "dni",
-    "name": "name"
-}
-```
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/17b7f477-cba0-4f17-80ed-7ed061b31875/Untitled.png)
 
-If the response is successful, the service will return an HTTP Status 200 and a message with the following structure:
+## PIPELINE
 
-```json
-{
-    "id": 1,
-    "dni": "dni",
-    "name": "name"
-}
-```
+The pipeline jobs are executed in Azure Devops tool, this one is trigger by changes in the master branch emulating a production environment.
 
-If the response is unsuccessful, we will receive status 400 and the following message:
+The pipeline jobs can be viewed in the following url.
 
-```json
-{
-    "error": "error"
-}
-```
+[Pipelines - Run 20240516.23 (azure.com)](https://dev.azure.com/jperalta0176/Devsu-Jperalta/_build/results?buildId=23&view=results)
 
-#### Get Users
+## API TEST CONTAINERIZED APP
 
-To get all users, the endpoint **/api/users** must be consumed with the following parameters:
+The endpoint is using a private DNS CloudFare to redirect the traffic to the Traefik Ingress Controller, this controller has a LoadBalancer Public IP Address assigned. Due to the lack of time the  TLS certificate was not issued using the CERTMANAGER controller installed in the AKS cluster.
 
-```bash
-  Method: GET
-```
+### APP ENDPOINT URL : https://devsu-app.ingenial-solutions.com/api/users
 
-If the response is successful, the service will return an HTTP Status 200 and a message with the following structure:
+### TESTING
 
-```json
-[
-    {
-        "id": 1,
-        "dni": "dni",
-        "name": "name"
-    }
-]
-```
+Postman was used to verify the endpoint HTTP METHODS
 
-#### Get User
-
-To get an user, the endpoint **/api/users/<id>** must be consumed with the following parameters:
-
-```bash
-  Method: GET
-```
-
-If the response is successful, the service will return an HTTP Status 200 and a message with the following structure:
-
-```json
-{
-    "id": 1,
-    "dni": "dni",
-    "name": "name"
-}
-```
-
-If the user id does not exist, we will receive status 404 and the following message:
-
-```json
-{
-    "error": "User not found: <id>"
-}
-```
-
-If the response is unsuccessful, we will receive status 400 and the following message:
-
-```json
-{
-    "errors": [
-        "error"
-    ]
-}
-```
-
-## License
-
-Copyright © 2023 Devsu. All rights reserved.
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/c34471f1-aa0e-4f5c-af05-6ff3d10dc4ae/Untitled.png)
