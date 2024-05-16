@@ -20,3 +20,5 @@ spec:
         image: devsujperalta.azurecr.io/peraltadevsu:18
         ports:
         - containerPort: 8000
+      imagePullSecrets:
+      - name: acr-secret
