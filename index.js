@@ -3,7 +3,10 @@ import { usersRouter } from "./users/router.js"
 import express from 'express'
 
 const app = express()
-const PORT = 8000
+const PORT = process.env.PORT
+
+console.log("Check env ConfigMap")
+console.log(process.env.DATABASE_USER)
 
 sequelize.sync({ force: true }).then(() => console.log('db is ready'))
 

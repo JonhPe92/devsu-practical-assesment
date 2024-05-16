@@ -1,7 +1,7 @@
-import * as dotenv from 'dotenv'
+//import * as dotenv from 'dotenv'
 import { Sequelize } from 'sequelize'
 
-dotenv.config()
+//dotenv.config() --- removed for production env
 
 const sequelize = new Sequelize('test-db', process.env.DATABASE_USER, process.env.DATABASE_PASSWORD, {
   dialect: 'sqlite',
