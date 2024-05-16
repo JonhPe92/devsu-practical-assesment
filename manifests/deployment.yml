@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: jperaltadevsu 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jperaltadevsu
+  template:
+    metadata:
+      labels:
+        app: jperaltadevsu 
+    spec:
+      containers:
+        - name: jperaltadevsu 
+          image: devsujperalta.azurecr.io/jperaltadevsu
+          ports:
+          - containerPort: 80
