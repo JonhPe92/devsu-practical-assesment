@@ -29,7 +29,9 @@ terraform apply -auto-approve
 
 If the deployment is correct the following should be obtained with terraform out
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/513a1605-ee23-4df7-9ca1-540eff625288/Untitled.png)
+
+![1](https://github.com/JonhPe92/devsu-practical-assesment/assets/106490610/b881d31f-9400-4881-b31b-228534e387ef)
+
 
 An AKS cluster resource should be provisioned with the necessary configuration to integrate the automatic deployment with the Azure Pipeline.
 
@@ -38,12 +40,13 @@ An AKS cluster resource should be provisioned with the necessary configuration t
 A docker file is created following best practices, avoiding copying files  that only increase the image size and could cause vulnerabilities , dotenv was removed for production instead env variables  can be passed to the app via ConfigMaps and Secrets. 
 
  
+![2](https://github.com/JonhPe92/devsu-practical-assesment/assets/106490610/c5fdecf4-21e5-401b-b413-a7757cab1cb1)
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/8fe7a062-5f04-4953-a9fb-cde170d2bc58/Untitled.png)
 
 For this scenario a Azure Container Register was created to allocate the manifest for every time a build is trigger in the pipeline. 
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/17b7f477-cba0-4f17-80ed-7ed061b31875/Untitled.png)
+![3](https://github.com/JonhPe92/devsu-practical-assesment/assets/106490610/9262f113-9b53-45e5-8831-b3b12d16799f)
+
 
 ## PIPELINE
 
@@ -62,5 +65,4 @@ The endpoint is using a private DNS CloudFare to redirect the traffic to the Tra
 ### TESTING
 
 Postman was used to verify the endpoint HTTP METHODS
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/91151976-0fb7-4f37-96da-c12be8452312/c34471f1-aa0e-4f5c-af05-6ff3d10dc4ae/Untitled.png)
+![4](https://github.com/JonhPe92/devsu-practical-assesment/assets/106490610/ea100ada-908b-4568-af61-eaf16dab68fe)
