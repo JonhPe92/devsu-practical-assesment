@@ -55,11 +55,13 @@ stages:
          $(tag)
 
 - stage: Deploy
-  displayName: "Deploy"
+  displayName: "Deploy Stage"
   dependsOn: buildandpush
   jobs:
-  - deployment: prodDeploy
+  - deployment: Deploy
     displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
     environment: $(env)   #configured an approval in this enviroment
     strategy:
       runOnce:
@@ -67,7 +69,7 @@ stages:
           steps:
           - checkout: self
           - task: KubernetesManifest@0
-            displayName: Deplot to Kubernetes cluster
+            displayName: Deploy to Kubernetes cluster
             inputs:
               action: deploy
               kubernetesServiceConnection: $(cluster)
@@ -78,5 +80,3 @@ stages:
                 $(Pipeline.Workspace)/manifests/ingress.yaml
               containers: |
                 $(ImageName):$(tag)
-
-
