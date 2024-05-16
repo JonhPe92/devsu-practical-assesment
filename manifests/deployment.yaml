@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: devsu-app
-        image: devsujperalta.azurecr.io/peraltadevsu:17
+        image: devsujperalta.azurecr.io/peraltadevsu:18
         ports:
         - containerPort: 8000'
