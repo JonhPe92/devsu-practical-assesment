@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: devsu-app
-        image: jonhpe/devsu-demo-app:latest
+        image: $(containerRegistry)/$(imageRepository):$(tag)
         ports:
         - containerPort: 8000
