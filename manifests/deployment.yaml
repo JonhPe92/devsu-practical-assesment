@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: devsu-app
-        image: $(containerRegistry)/$(imageRepository):$(tag)
+        image: devsujperalta.azurecr.io/peraltadevsu:'$(tag)'
         ports:
         - containerPort: 8000
