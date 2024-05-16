@@ -68,8 +68,9 @@ stages:
             inputs:
               action: deploy
               manifests: |
-                ./manifests/deployment.yml
-                ./manifests/service.yml
+                ./manifests/deployment.yaml
+                ./manifests/service.yaml
+                ./manifests/ingress.yaml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
