@@ -11,15 +11,15 @@ pool:
 variables: 
   tag: '$(Build.BuildId)'
   env: Production
-  cluster: devsu-dev-aks-cluster-devsu-app   #service connection for main cluster
+  cluster: devsu-dev-aks-cluster-devsu-app   
   ImageName: 'jonhpe/devsu-app'
   containerRegistry: 'dockerhub'
 stages:
-- stage : buildandtest
-  displayName: "Build and test"
+- stage : buildnode
+  displayName: "Build"
   jobs:
   - job: build
-    displayName: "Build and test"
+    displayName: "Build"
     steps:
     - task: NodeTool@0
       inputs:
@@ -28,9 +28,21 @@ stages:
     - script: |
         npm install
       displayName: 'npm install'
+#-----------------------Unit Test-------------------      
+- stage : test
+  displayName: "Test"
+  jobs:
+  - job: test
+    displayName: "Test"
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.11.0'
+      displayName: 'Install Node js'
     - script: |
         npm test
       displayName: 'npm test'
+
 #.................Second stage dockerizing app.........
 - stage: buildandpush
   displayName: "Build and push docker"
