@@ -28,17 +28,6 @@ stages:
     - script: |
         npm install
       displayName: 'npm install'
-#-----------------------Unit Test-------------------      
-- stage : test
-  displayName: "Test"
-  jobs:
-  - job: test
-    displayName: "Test"
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '20.11.0'
-      displayName: 'Install Node js'
     - script: |
         npm test
       displayName: 'npm test'
@@ -65,37 +54,29 @@ stages:
         tags: |
          $(tag)
 
-# - stage: Deploy
-#   displayName: Deploy stage
-#   dependsOn: Build
+- stage: Deploy
+  displayName: "Deploy"
+  dependsOn: buildandpush
+  jobs:
+  - deployment: prodDeploy
+    displayName: Deploy
+    environment: $(env)   #configured an approval in this enviroment
+    strategy:
+      runOnce:
+        deploy: 
+          steps:
+          - checkout: self
+          - task: KubernetesManifest@0
+            displayName: Deplot to Kubernetes cluster
+            inputs:
+              action: deploy
+              kubernetesServiceConnection: $(cluster)
+              namespace: default
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yaml
+                $(Pipeline.Workspace)/manifests/service.yaml
+                $(Pipeline.Workspace)/manifests/ingress.yaml
+              containers: |
+                $(ImageName):$(tag)
 
-#   jobs:
-#   - deployment: Deploy
-#     displayName: Deploy
-#     pool:
-#       vmImage: $(vmImageName)
-#     environment: 'JonhPe92devsupracticalassesment-1161.devsu-app'
-#     strategy:
-#       runOnce:
-#         deploy:
-#           steps:
-#           - task: KubernetesManifest@0
-#             displayName: Create imagePullSecret
-#             inputs:
-#               action: createSecret
-#               secretName: $(imagePullSecret)
-#               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
-
-#           - task: KubernetesManifest@0
-#             displayName: Deploy to Kubernetes cluster
-#             inputs:
-#               action: deploy
-#               manifests: |
-#                 $(Pipeline.Workspace)/manifests/deployment.yaml
-#                 $(Pipeline.Workspace)/manifests/service.yaml
-#                 $(Pipeline.Workspace)/manifests/ingress.yaml
-#               imagePullSecrets: |
-#                 $(imagePullSecret)
-#               containers: |
-#                 $(containerRegistry)/$(imageRepository):$(tag)
 
