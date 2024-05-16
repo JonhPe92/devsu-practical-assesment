@@ -6,20 +6,25 @@ trigger:
 resources:
 - repo: self
 
-pool:
-  vmImage: 'ubuntu-latest'
-variables: 
+variables:
+
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '1ef45e85-a1bf-4a97-bcd4-6ebcfca72a03'
+  imageRepository: 'jperaltadevsu'
+  containerRegistry: 'devsujperalta.azurecr.io'
+  dockerfilePath: '**/Dockerfile'
   tag: '$(Build.BuildId)'
-  env: Production
-  cluster: devsu-dev-aks-cluster-devsu-app   
-  ImageName: 'jonhpe/devsu-app'
-  containerRegistry: 'dockerhub'
+  imagePullSecret: 'devsujperalta2007e9f8-auth'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
 stages:
 - stage : buildnode
-  displayName: "Build"
+  displayName: "Build & Test"
   jobs:
   - job: build
-    displayName: "Build"
+    displayName: "Build & Test"
     steps:
     - task: NodeTool@0
       inputs:
@@ -33,50 +38,58 @@ stages:
       displayName: 'npm test'
 
 #.................Second stage dockerizing app.........
-- stage: buildandpush
-  displayName: "Build and push docker"
+- stage: Build
+  displayName: Build docker stage
   jobs:
-  - job: BuildandPush
-    displayName: Build and push Docker image
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
     steps:
     - task: Docker@2
-      displayName: Login to Docker Hub
-      inputs:
-        command: login
-        containerRegistry: '$(containerRegistry)'
-        displayName: 'Login in docker hub'
-    - task: Docker@2
-      displayName: Build and Push
+      displayName: Build and push an image to container registry
       inputs:
         command: buildAndPush
-        Dockerfile: './Dockerfile'
-        repository: '$(ImageName)'
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-         $(tag)
+          $(tag)
+
+    - upload: manifests
+      artifact: manifests
 
 - stage: Deploy
-  displayName: "Deploy Stage"
-  dependsOn: buildandpush
+  displayName: Deploy stage
+  dependsOn: Build
+
   jobs:
   - deployment: Deploy
     displayName: Deploy
     pool:
       vmImage: $(vmImageName)
-    environment: $(env)   #configured an approval in this enviroment
+    environment: 'JonhPe92devsupracticalassesment-1161.devsu-app'
     strategy:
       runOnce:
-        deploy: 
+        deploy:
           steps:
-          - checkout: self
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+
           - task: KubernetesManifest@0
             displayName: Deploy to Kubernetes cluster
             inputs:
               action: deploy
-              kubernetesServiceConnection: $(cluster)
-              namespace: default
               manifests: |
                 $(Pipeline.Workspace)/manifests/deployment.yaml
                 $(Pipeline.Workspace)/manifests/service.yaml
                 $(Pipeline.Workspace)/manifests/ingress.yaml
+              imagePullSecrets: |
+                $(imagePullSecret)
               containers: |
-                $(ImageName):$(tag)
+                $(containerRegistry)/$(imageRepository):$(tag)
+
