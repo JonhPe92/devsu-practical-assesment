@@ -17,8 +17,6 @@ spec:
     spec:
       containers:
       - name: devsu-app
-        image: devsujperalta.azurecr.io/peraltadevsu:18
+        image: jonhpe/devsu-demo-app:latest
         ports:
         - containerPort: 8000
-      imagePullSecrets:
-      - name: acr-secret
